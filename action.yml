@@ -1,0 +1,17 @@
+name: Action Name
+description: Action description
+inputs:
+  input-parameter:
+    description: Description of input parameter
+    required: true
+runs:
+  using: "composite"
+  steps:
+    
+    - name: Authenticate org
+      run: |
+        echo "Hello World!"
+        echo "Input Parameter: $INPUT_PARAMETER"
+      shell: bash
+      env:
+        INPUT_PARAMETER: ${{ inputs.input-parameter }}
