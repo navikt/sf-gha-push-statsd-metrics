@@ -1,17 +1,65 @@
-name: Action Name
-description: Action description
+name: Push logged metrics
+description: Push logged metrics
 inputs:
-  input-parameter:
-    description: Description of input parameter
+  metricsKey:
+    description: Private key for signing messages
     required: true
 runs:
-  using: "composite"
+  using: composite
   steps:
-    
-    - name: Authenticate org
-      run: |
-        echo "Hello World!"
-        echo "Input Parameter: $INPUT_PARAMETER"
+    - name: Transform and push metrics
+      continue-on-error: true
       shell: bash
+      run: |
+        if [[ -f .sfpowerscripts/logs/metrics.log ]]; then
+          # send some stats whilst we're at it
+          echo Metrics file found.
+          nl .sfpowerscripts/logs/metrics.log
+          metrics=$(jq --slurp --raw-output '
+            # just keep the last value
+            reverse | unique_by(.metric, .tags) | reverse | .[] |
+            (
+                if .type == "count" then "counter"
+                # note the spelling
+                elif .type == "guage" then "gauge"
+                # statsd-timers are always in ms. prometheus has no such type, so just
+                # use a gauge
+                elif .type == "timers" then "gauge"
+                # anything else, handle it when the time comes
+                else "unknown" end
+            ) as $type |
+            # assume counters with no value given are 1
+            (
+                if .value == null and $type == "counter" then 1
+                elif $type == "gauge" then .value
+                else null
+                end
+            ) as $value |
+            # only allow alpha, _, and : in metrics name
+            (.metric | gsub("[^a-z_]"; ":")) as $metric |
+            # transform tags into prometheus
+            (.tags // {} | to_entries | map(.key + "=\"" + .value + "\"") | join(",")) as $tags |
+            # put it all together. one line with description, one line with metric.
+            "# TYPE \($metric) \($type)\n\($metric){\($tags)} \($value)"
+          ' .sfpowerscripts/logs/metrics.log | awk '/^# TYPE / && a[$3]++ {next}; 1')
+          echo "METRICSKEY len: ${#METRICSKEY}"
+          keyfile=$(mktemp) || exit 1
+          cat > "$keyfile" <<< "$METRICSKEY"
+          sig=$(printf %s "$metrics" | openssl dgst -sha256 -sign "$keyfile" -out - | base64 -w0)
+
+          repo_name=$(basename "$GITHUB_REPOSITORY")
+
+          jq --compact-output --null-input \
+            --arg metrics "$metrics" \
+            --arg runner "$repo_name" \
+            --arg sig "$sig" \
+            '{"runner":$runner,"metrics":$metrics,"signature":$sig}' |
+            tee >(curl -D- -H 'Content-Type: application/json' --data-binary @- \
+              https://sf-github-metrics.ekstern.dev.nav.no/measures/job/sfplatform)
+        else
+          echo No metrics file this time.
+          ls -laR .sfpowerscripts
+        fi
       env:
-        INPUT_PARAMETER: ${{ inputs.input-parameter }}
+        METRICSKEY: ${{ inputs.metricsKey }}
+        GITHUB_REPOSITORY: ${{ github.repository }}

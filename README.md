@@ -1,17 +1,16 @@
-# <Navn på action>
+# Push logged metrics
 
-<Beskrivelse av action>
+Henter loggger produsert av `sfp cli` og pusher de til [sf-github-metrics](https://github.com/navikt/sf-github-metrics) som dytter det videre til Prometheus.
 
 ## Usage
 
 <!-- Start usage -->
 ```yaml
-- uses: navikt/<reponame>@<tag/sha>
+- uses: navikt/sf-gha-push-statsd-metrics@<tag/sha>
     with:
-        # Description of input parameter
-        # Required: true/false
-        # Default: ''
-        input-parameter: ''
+        # Private key for signing messages
+        # Required: true
+        metricsKey: ''
 ```
 <!-- end usage -->
 
