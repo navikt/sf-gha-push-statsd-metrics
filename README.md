@@ -10,7 +10,7 @@ Henter loggger produsert av `sfp cli` og pusher de til [sf-github-metrics](https
     with:
         # Private key for signing messages
         # Required: true
-        metricsKey: ''
+        metrics-key: ''
 ```
 <!-- end usage -->
 

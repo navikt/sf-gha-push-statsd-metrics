@@ -1,0 +1,110 @@
+{
+  "sfpowerscripts.scratchorgs.active.remaining": {
+    "type": "GAUGE",
+    "help": "Remaining active scratch org slots"
+  },
+  "sfpowerscripts.scratchorgs.daily.remaining": {
+    "type": "GAUGE",
+    "help": "Remaining daily scratch org allocations"
+  },
+  "sfpowerscripts.pool.footprint": {
+    "type": "GAUGE",
+    "help": "Total number of orgs present across all pools"
+  },
+  "sfpowerscripts.pool.total": {
+    "type": "GAUGE",
+    "help": "Total capacity of a pool",
+    "alias": {"name": "sfpowerscripts.pool", "labels": {"state": "total"}}
+  },
+  "sfpowerscripts.pool.available": {
+    "type": "GAUGE",
+    "help": "Currently available unallocated orgs in a pool",
+    "alias": {"name": "sfpowerscripts.pool", "labels": {"state": "available"}}
+  },
+  "sfpowerscripts.pool.inuse": {
+    "type": "GAUGE",
+    "help": "Currently in-use orgs in a pool",
+    "alias": {"name": "sfpowerscripts.pool", "labels": {"state": "in_use"}}
+  },
+  "sfpowerscripts.pool.provisioning": {
+    "type": "GAUGE",
+    "help": "Org instances being provisioned",
+    "alias": {"name": "sfpowerscripts.pool", "labels": {"state": "provisioning"}}
+  },
+  "sfpowerscripts.pool.orgs": {
+    "type": "GAUGE",
+    "help": "Pool org counts by state (total, available, in_use, provisioning)"
+  },
+  "sfpowerscripts.pool": {
+    "type": "GAUGE",
+    "help": "Pool org counts unified across states via alias labels"
+  },
+  "sfpowerscripts.build.scheduled.packages": {
+    "type": "COUNT",
+    "help": "Number of package build jobs scheduled"
+  },
+  "sfpowerscripts.build.succeeded.packages": {
+    "type": "COUNT",
+    "help": "Number of package build jobs succeeded"
+  },
+  "sfpowerscripts.package.metadatacount": {
+    "type": "GAUGE",
+    "help": "Total metadata members included in a package"
+  },
+  "sfpowerscripts.package.created": {
+    "type": "COUNT",
+    "help": "Packages created (count of create operations)"
+  },
+  "sfpowerscripts.package.elapsed.time": {
+    "type": "GAUGE",
+    "help": "Elapsed time for generic package operation in milliseconds"
+  },
+  "sfpowerscripts.package.creation.elapsed_time": {
+    "type": "GAUGE",
+    "help": "Elapsed time for package creation in milliseconds"
+  },
+  "sfpowerscripts.package.installation": {
+    "type": "COUNT",
+    "help": "Count of package installation operations"
+  },
+  "sfpowerscripts.package.installation.elapsed_time": {
+    "type": "GAUGE",
+    "help": "Elapsed time for package installation in milliseconds"
+  },
+  "sfpowerscripts.apextest.testtotal.time": {
+    "type": "GAUGE",
+    "help": "Total elapsed time for all Apex tests in a run (milliseconds)"
+  },
+  "sfpowerscripts.apextest.command.time": {
+    "type": "GAUGE",
+    "help": "Elapsed time of the Apex test command invocation (milliseconds)"
+  },
+  "sfpowerscripts.apextests.triggered": {
+    "type": "COUNT",
+    "help": "Number of Apex test executions triggered"
+  },
+  "sfpowerscripts.validate.failed": {
+    "type": "COUNT",
+    "help": "Number of failed validation operations"
+  },
+  "sfpowerscripts.validate.scheduled": {
+    "type": "COUNT",
+    "help": "Number of scheduled validation operations"
+  },
+  "sfpowerscripts.validate.duration": {
+    "type": "GAUGE",
+    "help": "Total elapsed time of the validation process (milliseconds)"
+  },
+  "sfpowerscripts.validate.packages.scheduled": {
+    "type": "GAUGE",
+    "help": "Number of packages scheduled for validation"
+  },
+  "sfpowerscripts.validate.packages.succeeded": {
+    "type": "GAUGE",
+    "help": "Number of packages whose validation succeeded"
+  },
+  "sfpowerscripts.validate.packages.failed": {
+    "type": "GAUGE",
+    "help": "Number of packages whose validation failed"
+  }
+}
