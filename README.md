@@ -14,6 +14,10 @@ Henter loggger produsert av `sfp cli` og pusher de til [sf-github-metrics](https
 ```
 <!-- end usage -->
 
+## Kode generert av GitHub Copilot
+
+Dette repoet bruker GitHub Copilot til å generere kode.
+
 ## Henvendelser
 
 Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
