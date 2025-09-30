@@ -83,6 +83,10 @@
     "type": "COUNT",
     "help": "Number of Apex test executions triggered"
   },
+  "sfpowerscripts.apextest.testcoverage": {
+    "type": "GAUGE",
+    "help": "Test Coverage of a package"
+  },
   "sfpowerscripts.validate.failed": {
     "type": "COUNT",
     "help": "Number of failed validation operations"
@@ -106,5 +110,169 @@
   "sfpowerscripts.validate.packages.failed": {
     "type": "GAUGE",
     "help": "Number of packages whose validation failed"
+  },
+  "sfpowerscripts.deploy.failed": {
+    "type": "COUNT",
+    "help": "Number of times deploy command failed"
+  },
+  "sfpowerscripts.deploy.duration": {
+    "type": "GAUGE",
+    "help": "Time spent on executing deploy command"
+  },
+  "sfpowerscripts.deploy.scheduled": {
+    "type": "COUNT",
+    "help": "Number of times deployment was scheduled to run"
+  },
+  "sfpowerscripts.deploy.packages.scheduled": {
+    "type": "GAUGE",
+    "help": "Number of packages that were scheduled to be deployed by the deploy command"
+  },
+  "sfpowerscripts.deploy.succeeded": {
+    "type": "COUNT",
+    "help": "Number of succeeded deploy executions"
+  },
+  "sfpowerscripts.deploy.succeeded.packages": {
+    "type": "GAUGE",
+    "help": "Number of packages that were successfully deployed"
+  },
+  "sfpowerscripts.deploy.failed.packages": {
+    "type": "GAUGE",
+    "help": "Number and details of packages that failed to deploy"
+  },
+  "sfpowerscripts.build.scheduled": {
+    "type": "COUNT",
+    "help": "Number of times build was scheduled to run"
+  },
+  "sfpowerscripts.build.duration": {
+    "type": "GAUGE",
+    "help": "Time spent on executing build command"
+  },
+  "sfpowerscripts.build.failed.packages": {
+    "type": "GAUGE",
+    "help": "Number of packages failed to build"
+  },
+  "sfpowerscripts.validate.succeeded": {
+    "type": "COUNT",
+    "help": "Number of successful validations"
+  },
+  "sfpowerscripts.publish.duration": {
+    "type": "GAUGE",
+    "help": "Time spent on executing publish command"
+  },
+  "sfpowerscripts.publish.succeeded": {
+    "type": "COUNT",
+    "help": "Number of succeeded publish executions"
+  },
+  "sfpowerscripts.package.elapsed": {
+    "type": "GAUGE",
+    "help": "Time taken to create a package"
+  },
+  "sfpowerscripts.package.testcoverage": {
+    "type": "GAUGE",
+    "help": "Test Coverage of a package"
+  },
+  "sfpowerscripts.apextest.testtotal": {
+    "type": "GAUGE",
+    "help": "Time taken for Apex Test Execution"
+  },
+  "sfpowerscripts.prepare.succeededorgs": {
+    "type": "GAUGE",
+    "help": "Number of orgs that were succeeded during a run of prepare"
+  },
+  "sfpowerscripts.prepare.failedorgs": {
+    "type": "GAUGE",
+    "help": "Number of orgs that failed during a run of prepare"
+  },
+  "sfpowerscripts.prepare.duration": {
+    "type": "GAUGE",
+    "help": "Time take to prepare a pool of scratchorgs"
+  },
+  "sfpowerscripts.prepare.org.checkpointfailed": {
+    "type": "COUNT",
+    "help": "Number of scratch orgs that failed on a checkpoint, during prepare"
+  },
+  "sfpowerscripts.prepare.org.partial": {
+    "type": "COUNT",
+    "help": "Number of scratch orgs that partially succeeded, during prepare"
+  },
+  "sfpowerscripts.prepare.packages.scheduled": {
+    "type": "GAUGE",
+    "help": "Number of packages scheduled for installation when preparing scratch org pools"
+  },
+  "sfpowerscripts.prepare.packages.succeeded": {
+    "type": "GAUGE",
+    "help": "Number of packages successfully installed when preparing scratch org pools"
+  },
+  "sfpowerscripts.prepare.packages.failed": {
+    "type": "GAUGE",
+    "help": "Number of packages failed to install when preparing scratch org pools"
+  },
+  "sfpowerscripts.so.packages.requested": {
+    "type": "GAUGE",
+    "help": "Number of packages requested to be installed to an individual scratch org in the pool"
+  },
+  "sfpowerscripts.so.package.installed": {
+    "type": "GAUGE",
+    "help": "Number of packages successfully installed to an individual scratch org in the pool"
+  },
+  "sfpowerscripts.pool.sandbox.succeededorgs": {
+    "type": "COUNT",
+    "help": "Number of sandbox that was succesfully activated"
+  },
+  "sfpowerscripts.pool.sandbox.failedorgs": {
+    "type": "COUNT",
+    "help": "Number of sandbox that failed to activate"
+  },
+  "sfpowerscripts.pool.sandbox.deleted": {
+    "type": "COUNT",
+    "help": "Number of sandbox that was sucuesfully deleted"
+  },
+  "sfpowerscripts.pool.sandbox.deletefailed": {
+    "type": "COUNT",
+    "help": "Number of sandbox that was failed to delete"
+  },
+  "sfpowerscripts.issueops.dev.sandbox.requested": {
+    "type": "COUNT",
+    "help": "Number of dev sandboxes that were requested by raising an issue"
+  },
+  "sfpowerscripts.issueops.dev.sandbox.failed": {
+    "type": "COUNT",
+    "help": "Number of dev sandboxes that were failed during request"
+  },
+  "sfpowerscripts.release.scheduled": {
+    "type": "COUNT",
+    "help": "Number of scheduled releases"
+  },
+  "sfpowerscripts.release.succeeded": {
+    "type": "COUNT",
+    "help": "Number of successful releases"
+  },
+  "sfpowerscripts.release.failed": {
+    "type": "COUNT",
+    "help": "Number of failed releases"
+  },
+  "sfpowerscripts.release.duration": {
+    "type": "GAUGE",
+    "help": "Time taken for a release"
+  },
+  "sfpowerscripts.release.packages.scheduled": {
+    "type": "GAUGE",
+    "help": "Number of packages scheduled for release"
+  },
+  "sfpowerscripts.release.packages.succeeded": {
+    "type": "GAUGE",
+    "help": "Number of packages that were installed successfully in a release"
+  },
+  "sfpowerscripts.release.packages.failed": {
+    "type": "GAUGE",
+    "help": "Number of packages that failed to install in a release"
+  },
+  "sfpowerscripts.release.workitems": {
+    "type": "GAUGE",
+    "help": "Aggregated count of workitems in a release (a release is identified by the identifier used in a release definition)"
+  },
+  "sfpowerscripts.release.commits": {
+    "type": "GAUGE",
+    "help": "Aggregated count of commits in a release (a release is identified by the identifier used in a release definition)"
   }
 }
