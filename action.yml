@@ -14,7 +14,6 @@ runs:
         set -euo pipefail
         bash "$GITHUB_ACTION_PATH/scripts/transform.sh" \
           --log-file ".sfpowerscripts/logs/metrics.log" \
-          --with-timestamps \
           --strict \
           --config "$GITHUB_ACTION_PATH/config/metrics_config.json" \
           --fail-on-warn \
