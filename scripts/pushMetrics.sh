@@ -3,11 +3,23 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# pushMetrics.sh
+# pushMetrics.sh - Secure Prometheus Metrics Transmission
+# 
 # Purpose: Sign (optional) and transmit Prometheus exposition-format metrics to
 #          a remote ingestion endpoint with retry + jitter backoff.
-# Security: Uses umask 077 and ephemeral temp files for private key handling.
-# Backoff: attempt n (n>=2) sleeps 2^(n-2) seconds + random(0..JITTER_MAX_MS)/1000.
+#
+# Security Model:
+# - Uses umask 077 and ephemeral temp files for private key handling
+# - Private keys never written to persistent storage during execution  
+# - SHA-256 + RSA signatures for payload integrity verification
+# - Supports unsigned mode for development/testing environments
+#
+# Retry Logic:
+# - Exponential backoff: attempt n (n>=2) sleeps 2^(n-2) seconds
+# - Random jitter: + random(0..JITTER_MAX_MS)/1000 to prevent thundering herd
+# - Example: attempt 1=0s, attempt 2=0-0.4s, attempt 3=1-1.4s, attempt 4=2-2.4s
+#
+# Data Flow: read_metrics() -> build_payload() -> post_payload()
 # ---------------------------------------------------------------------------
 
 umask 077  # Restrictive permissions for any created files
@@ -38,8 +50,10 @@ _metrics=""
 _payload=""
 
 # --- Helpers ----------------------------------------------------------------
+# Safely append an EXIT trap without overwriting existing ones
+# This allows multiple cleanup operations to be chained together
+# Args: $1 - command to execute on EXIT
 add_exit_trap() {
-    # Append a new EXIT trap without overwriting existing ones.
     local new="$1" existing
     existing=$(trap -p EXIT | awk -F'"' '{print $2}' || true)
     if [[ -n $existing ]]; then
@@ -85,18 +99,23 @@ Exit codes:
     1 failure (validation, signing, or POST retries exhausted)
 
 Examples:
-    # Signed POST reading from stdin
-    cat metrics.prom | RUNNER_NAME=local-dev METRICS_KEY="$(echo key...)" \\
+    # Production signed POST reading from stdin
+    cat metrics.prom | RUNNER_NAME=prod-runner METRICS_KEY="\$(cat private.pem)" \\
         $0 --endpoint https://ingest.example/metrics
 
-    # Dry-run, unsigned
-    cat metrics.prom | RUNNER_NAME=local-dev $0 --endpoint https://ingest.example/metrics --dry-run --no-sign
+    # Local development with file input (unsigned for testing)
+    $0 --endpoint https://ingest.example/metrics \\
+       --runner-name local-dev --metrics-file metrics.prom --dry-run --no-sign
 
-    # GitHub Actions style grouping & prefixes
-    cat metrics.prom | RUNNER_NAME=local-dev $0 \\
+    # GitHub Actions integration with proper grouping
+    cat metrics.prom | RUNNER_NAME=\${GITHUB_RUN_ID} $0 \\
         --endpoint https://ingest.example/metrics \\
         --log-group-prefix '::group::' --log-group-suffix '::endgroup::' \\
-        --error-prefix '::error ::' --warn-prefix '::warning ::'
+        --error-prefix '::error::' --warn-prefix '::warning::'
+
+    # Custom retry configuration for unreliable networks  
+    cat metrics.prom | RUNNER_NAME=edge-node $0 \\
+        --endpoint https://ingest.example/metrics --retries 5 --jitter-max-ms 1000
 
 EOF
 }
@@ -116,6 +135,9 @@ validate_and_prepare() {
     [[ $MAX_BYTES -ge 1000 ]] || die "--max-bytes must be at least 1000"
 }
 
+# Read metrics from stdin or file, validate size and content
+# Sets global variable: _metrics
+# Outputs: metrics summary, content, and hash to stdout/stderr
 read_metrics() {
     if $USE_STDIN; then
         echo "Reading metrics from standard input" >&2
@@ -125,7 +147,9 @@ read_metrics() {
         echo "Reading metrics from $METRICS_FILE" >&2
         _metrics=$(<"$METRICS_FILE")
     fi
+    # Strip trailing newlines to normalize input
     while [[ $_metrics == *$'\n' ]]; do _metrics=${_metrics%$'\n'}; done
+    # Ensure we have non-whitespace content
     [[ -n "${_metrics//[[:space:]]/}" ]] || die "No metrics generated"
     local bytes line_count
     bytes=$(LC_ALL=C printf %s "$_metrics" | wc -c)
@@ -135,26 +159,48 @@ read_metrics() {
     printf 'Lines: %s\n' "$line_count"
     printf 'Bytes: %s\n' "$bytes"
     emit_group_end
+    emit_group_start "Metrics"
+    echo "$_metrics"
+    emit_group_end
     emit_group_start "Payload hash"
     printf %s "$_metrics" | sha256sum | awk '{print "sha256=" $1}'
     emit_group_end
 }
 
+# Build JSON payload with metrics data, optionally signed
+# Requires: _metrics global variable set by read_metrics()
+# Sets: _payload global variable with JSON string
+# Uses temporary files for secure key handling and proper JSON escaping
 build_payload() {
+    local metricsfile
+    metricsfile=$(mktemp)
+    add_exit_trap "rm -f '$metricsfile'"
+    printf %s "$_metrics" > "$metricsfile"
+    
     if $NO_SIGN; then
         warn "Signing disabled (--no-sign)"
-        _payload=$(jq -c --arg m "$_metrics" --arg r "$RUNNER_NAME" '{"runner":$r,"metrics":$m}')
+        _payload=$(jq -c --arg r "$RUNNER_NAME" --rawfile m "$metricsfile" --null-input '{"runner":$r,"metrics":$m}')
     else
         local keyfile sig
         keyfile=$(mktemp)
         add_exit_trap "rm -f '$keyfile'"
         cat > "$keyfile" <<< "${METRICS_KEY:?METRICS_KEY missing}"
         if ! openssl pkey -in "$keyfile" -check -noout >/dev/null 2>&1; then die "Invalid private key"; fi
+        # Create SHA-256 signature of metrics data, base64 encoded
         sig=$(printf %s "$_metrics" | openssl dgst -sha256 -sign "$keyfile" -out - | openssl base64 -A)
-        _payload=$(jq -c --arg m "$_metrics" --arg r "$RUNNER_NAME" --arg s "$sig" '{"runner":$r,"metrics":$m,"signature":$s}')
+        # Build signed payload using rawfile to safely handle special characters
+        _payload=$(jq -c --arg r "$RUNNER_NAME" --arg s "$sig" --rawfile m "$metricsfile" --null-input '{"runner":$r,"metrics":$m,"signature":$s}')
     fi
+
+    emit_group_start "Metrics payload"
+    echo "$_payload"
+    emit_group_end
 }
 
+# Exponential backoff with jitter for retry attempts
+# Formula: 2^(attempt-2) seconds + random(0..JITTER_MAX_MS)/1000
+# Args: $1 - attempt number (1-based)
+# Returns: immediately for attempt 1, sleeps for attempts 2+
 backoff_sleep() {
     local attempt=$1
     (( attempt>1 )) || return 0
@@ -163,6 +209,10 @@ backoff_sleep() {
     sleep "$(awk -v s="$base" -v j="$jitter_ms" 'BEGIN{printf "%.3f", s + (j/1000)}')"
 }
 
+# POST payload to endpoint with retry logic and comprehensive error handling
+# Requires: _payload global variable set by build_payload()
+# Features: exponential backoff, response capture, detailed error reporting
+# Returns: 0 on success (2xx response), exits with error on failure
 post_payload() {
     if $DRY_RUN; then
         warn "--dry-run enabled: skipping POST to $ENDPOINT"
@@ -174,8 +224,10 @@ post_payload() {
         backoff_sleep "$i"
         response_headers=$(mktemp); add_exit_trap "rm -f '$response_headers'"
         response_body=$(mktemp); add_exit_trap "rm -f '$response_body'"
+        # POST with response capture; || true prevents script exit on curl failure
         http_status=$(curl -sS -o "$response_body" -w '%{http_code}' -D "$response_headers" -H 'Content-Type: application/json' \
             --data-binary "$_payload" "$ENDPOINT" || true)
+        # Check for any 2xx success status
         if [[ $http_status =~ ^2[0-9][0-9]$ ]]; then
             cat "$response_headers"
             rm -f "$response_headers" "$response_body"
