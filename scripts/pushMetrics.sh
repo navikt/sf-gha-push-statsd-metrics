@@ -67,8 +67,8 @@ die() { echo "${ERROR_PREFIX}$*" >&2; exit 1; }
 warn() { echo "${WARN_PREFIX}$*" >&2; }
 need() { command -v "$1" >/dev/null || die "Missing dependency '$1'"; }
 
-emit_group_start() { [[ -n $LOG_GROUP_PREFIX ]] && echo "${LOG_GROUP_PREFIX}$1"; }
-emit_group_end()   { [[ -n $LOG_GROUP_SUFFIX ]] && echo "$LOG_GROUP_SUFFIX"; }
+emit_group_start() { [[ -n $LOG_GROUP_PREFIX ]] && echo "${LOG_GROUP_PREFIX}$1" || true; }
+emit_group_end()   { [[ -n $LOG_GROUP_SUFFIX ]] && echo "$LOG_GROUP_SUFFIX" || true; }
 
 usage() {
         cat <<EOF
