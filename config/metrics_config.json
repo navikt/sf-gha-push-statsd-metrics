@@ -87,6 +87,10 @@
     "type": "GAUGE",
     "help": "Test Coverage of a package"
   },
+  "sfpowerscripts.apextest.tests.ran": {
+    "type": "GAUGE",
+    "help": "Number of tests that were run"
+  },
   "sfpowerscripts.validate.failed": {
     "type": "COUNT",
     "help": "Number of failed validation operations"
