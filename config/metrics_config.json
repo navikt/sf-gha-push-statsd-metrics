@@ -217,7 +217,7 @@
   },
   "sfpowerscripts.pool.sandbox.succeededorgs": {
     "type": "COUNT",
-    "help": "Number of sandbox that was succesfully activated"
+    "help": "Number of sandbox that was successfully activated"
   },
   "sfpowerscripts.pool.sandbox.failedorgs": {
     "type": "COUNT",
@@ -225,7 +225,7 @@
   },
   "sfpowerscripts.pool.sandbox.deleted": {
     "type": "COUNT",
-    "help": "Number of sandbox that was sucuesfully deleted"
+    "help": "Number of sandbox that was successfully deleted"
   },
   "sfpowerscripts.pool.sandbox.deletefailed": {
     "type": "COUNT",
@@ -269,7 +269,7 @@
   },
   "sfpowerscripts.release.workitems": {
     "type": "GAUGE",
-    "help": "Aggregated count of workitems in a release (a release is identified by the identifier used in a release definition)"
+    "help": "Aggregated count of work items in a release (a release is identified by the identifier used in a release definition)"
   },
   "sfpowerscripts.release.commits": {
     "type": "GAUGE",
