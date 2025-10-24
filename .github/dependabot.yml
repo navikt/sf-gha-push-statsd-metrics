@@ -12,6 +12,8 @@ updates:
       day: "monday"
       time: "05:00"
       timezone: "Europe/Berlin"
+    cooldown:
+      default-days: 4
     groups:
       gha:
         patterns:
