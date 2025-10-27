@@ -25,10 +25,24 @@ For å deaktivere pushing av metrics, sett en repository-variabel:
 5. Opprett variabel:
    - **Name**: `DISABLE_SF_METRICS_PUSH`
    - **Value**: `true`
+6. Inne i workflowen som bruker actionen legg inn `DISABLE_SF_METRICS_PUSH: ${{ vars.DISABLE_SF_METRICS_PUSH || 'false' }}` som `env`. Gjerne på workflow nivå.
+   
+  ```yaml
+  env:
+    DISABLE_SF_METRICS_PUSH: ${{ vars.DISABLE_SF_METRICS_PUSH || 'false' }}
+
+  jobs:
+    my-job:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: navikt/sf-gha-push-statsd-metrics@main
+          with:
+            metricsKey: ${{ secrets.METRICS_KEY }}
+  ```
 
 Når denne variabelen er satt, vil action automatisk hoppe over transformering og pushing av metrics. For å aktivere metrics igjen, slett variabelen eller sett verdien til `false`.
 
-#### Alternative måter å sette variabelen på
+#### Måter å sette variabelen på
 
 **Per workflow:**
 
