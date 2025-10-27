@@ -12,6 +12,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
+        
         bash "$GITHUB_ACTION_PATH/scripts/transform.sh" \
           --log-file ".sfpowerscripts/logs/metrics.log" \
           --strict \
@@ -20,6 +21,11 @@ runs:
           --error-prefix "error:: " \
           --warn-prefix "warning:: " \
           --output "promMetrics.log"
+
+        if [[ "${DISABLE_SF_METRICS_PUSH:-false}" == "true" ]]; then
+          echo "DISABLE_SF_METRICS_PUSH is set to true. Skipping metrics push..."
+          exit 0
+        fi
 
         bash "$GITHUB_ACTION_PATH/scripts/pushMetrics.sh" \
           --endpoint "$ENDPOINT" \
